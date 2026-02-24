@@ -1,7 +1,4 @@
 {
-    "python-envs.defaultEnvManager": "ms-python.python:system",
-    "python-envs.pythonProjects": [],
-    "python.analysis.extraPaths": [
-        "./legal-ease/backend/app"
-    ]
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "python.analysis.extraPaths": ["./legal-ease/backend/app"]
 }
