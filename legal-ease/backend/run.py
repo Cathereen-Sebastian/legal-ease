@@ -14,9 +14,9 @@ if current_dir not in sys.path:
 # Because it's app >> services >> risk_scorer
 try:
     from app.services.risk_scorer import compute_risk
-    print("✅ Connection established: Backend logic loaded.")
+    print(" Connection established: Backend logic loaded.")
 except ImportError as e:
-    print(f"❌ Path Error: Could not find the risk_scorer. {e}")
+    print(f" Path Error: Could not find the risk_scorer. {e}")
     sys.exit(1)
 
 app = FastAPI()
@@ -45,5 +45,5 @@ async def analyze_document(payload: dict):
     return result
 
 if __name__ == "__main__":
-    print("🚀 FastAPI is starting on http://127.0.0.1:8000")
+    print(" FastAPI is starting on http://127.0.0.1:8000")
     uvicorn.run(app, host="127.0.0.1", port=8000)
