@@ -31,10 +31,14 @@ RISK_CATEGORIES = {
     },
 
     "governing_law": {
-        "weight": 4,
+        "weight": 3,
         "keywords": [
-            "governing law", "jurisdiction", "exclusive venue", 
-            "laws of", "state of", "country of", "courts of"
+            "exclusive jurisdiction",
+            "submit to jurisdiction",
+            "sole jurisdiction",
+            "courts located in",
+            "governed by the laws of",
+            "must be brought in"
         ],
         "semantic_templates": [
             "This agreement is governed by the laws of a specific jurisdiction.",
