@@ -1,16 +1,22 @@
 RISK_CATEGORIES = {
+
     "data_sharing": {
         "weight": 5,
         "keywords": [
-            "share your data", "third party", "sell your information", 
-            "meta companies", "affiliated companies", "partners", 
-            "transfer information", "disclose information", "monetize"
+            "share your data",
+            "third party",
+            "sell your information",
+            "affiliated companies",
+            "partners",
+            "transfer information",
+            "disclose information",
+            "monetize your data"
         ],
         "semantic_templates": [
             "We may disclose your personal information to external partners.",
             "User data may be transferred to affiliated companies.",
-            "Information is shared across corporate entities for advertising.",
-            "We work with partners and service providers to share user data."
+            "Information may be shared with third party partners.",
+            "We may share your data with advertising partners."
         ],
         "explanation": "This clause allows sharing of personal data with external or affiliated entities."
     },
@@ -18,16 +24,20 @@ RISK_CATEGORIES = {
     "arbitration": {
         "weight": 5,
         "keywords": [
-            "binding arbitration", "class action waiver", "waive any right", 
-            "jury trial", "dispute resolution", "individual basis"
+            "binding arbitration",
+            "class action waiver",
+            "waive any right",
+            "jury trial",
+            "dispute resolution",
+            "individual basis"
         ],
         "semantic_templates": [
-            "You agree to resolve all disputes through binding individual arbitration.",
-            "You waive your right to participate in class action lawsuits.",
-            "Claims must be brought only on your own behalf.",
-            "You waive the right to have disputes decided by a judge or jury."
+            "You agree to resolve disputes through binding arbitration.",
+            "You waive the right to participate in class action lawsuits.",
+            "Claims must be brought individually.",
+            "Disputes will be resolved outside court."
         ],
-        "explanation": "This clause forces you to settle disputes outside of court and prevents group lawsuits."
+        "explanation": "This clause forces disputes to be resolved outside court and limits legal rights."
     },
 
     "governing_law": {
@@ -35,74 +45,174 @@ RISK_CATEGORIES = {
         "keywords": [
             "exclusive jurisdiction",
             "submit to jurisdiction",
-            "sole jurisdiction",
             "courts located in",
             "governed by the laws of",
-            "must be brought in"
+            "legal proceedings shall be conducted"
         ],
         "semantic_templates": [
             "This agreement is governed by the laws of a specific jurisdiction.",
-            "Any legal action must be brought in a court located far from the user.",
-            "The parties submit to the exclusive jurisdiction of the courts of Delaware.",
-            "Legal proceedings shall be conducted under the laws of Singapore."
+            "Legal actions must be filed in specific courts.",
+            "The parties submit to the jurisdiction of certain courts."
         ],
-        "explanation": "This clause determines which country or state's laws apply, making it difficult to seek justice locally."
+        "explanation": "This clause determines which jurisdiction's laws apply to disputes."
     },
 
     "content_ownership": {
         "weight": 4,
         "keywords": [
-            "royalty-free", "sublicensable", "transferable license", 
-            "host, use, and distribute", "perpetual", "irrevocable", "worldwide license"
+            "royalty free",
+            "perpetual license",
+            "irrevocable license",
+            "transferable license",
+            "sublicensable",
+            "worldwide license",
+            "use your content"
         ],
         "semantic_templates": [
-            "You grant us a perpetual license to use and distribute your content.",
-            "The company retains rights to modify and display your uploaded media.",
-            "By uploading content, you provide us with a worldwide right to reproduce it."
+            "You grant us a perpetual license to use your content.",
+            "The company may host, use, and distribute your uploaded content.",
+            "Uploaded content may be reproduced or modified by the company."
         ],
-        "explanation": "This clause gives the company broad rights to use, sell, or modify the content you upload."
+        "explanation": "This clause gives the company rights to use or distribute content uploaded by users."
     },
 
     "unilateral_changes": {
         "weight": 4,
         "keywords": [
-            "modify these terms", "change at any time", "sole discretion", 
-            "without prior notice", "updated version"
+            "modify these terms",
+            "change at any time",
+            "sole discretion",
+            "without prior notice",
+            "updated terms"
         ],
         "semantic_templates": [
-            "We reserve the right to alter this agreement at our sole discretion.",
-            "Your continued use of the service constitutes acceptance of new terms.",
-            "We may change our policies without specifically notifying you."
+            "We reserve the right to modify this agreement at any time.",
+            "Terms may be updated without prior notice.",
+            "Continued use means acceptance of modified policies."
         ],
-        "explanation": "The company can change the rules of the agreement at any time without your consent."
+        "explanation": "The company may change the agreement without user approval."
     },
 
     "auto_renewal": {
         "weight": 4,
         "keywords": [
-            "auto renew", "automatic renewal", "recurring payment", 
-            "subscription continues", "cancelled"
+            "auto renew",
+            "automatic renewal",
+            "recurring payment",
+            "subscription continues",
+            "renew automatically"
         ],
         "semantic_templates": [
-            "Your subscription continues unless cancelled.",
-            "The service renews automatically after each billing cycle.",
-            "Fees are automatically charged to your chosen payment method."
+            "Subscriptions automatically renew unless cancelled.",
+            "Recurring payments will be charged periodically.",
+            "Fees will be automatically charged after each billing cycle."
         ],
-        "explanation": "This clause may renew services and charge fees without explicit reconfirmation."
+        "explanation": "This clause may automatically renew subscriptions and charge users."
     },
 
     "limited_liability": {
         "weight": 3,
         "keywords": [
-            "not liable", "no responsibility", "limitation of liability", 
-            "as is", "disclaimers", "maximum extent permitted"
+            "not liable",
+            "limitation of liability",
+            "no responsibility",
+            "as is",
+            "disclaim all warranties"
         ],
         "semantic_templates": [
-            "We are not responsible for damages arising from use.",
-            "The company disclaims liability for losses.",
-            "Services are provided on an as-is and as-available basis.",
-            "Our total liability shall not exceed a specified amount."
+            "Services are provided on an as-is basis.",
+            "The company is not liable for damages.",
+            "Liability for losses is limited."
         ],
-        "explanation": "This clause limits the company's legal responsibility and your ability to sue for damages."
+        "explanation": "This clause limits the company’s legal responsibility for damages."
+    },
+
+    "cookies_tracking": {
+        "weight": 3,
+        "keywords": [
+            "cookies",
+            "tracking technologies",
+            "analytics",
+            "usage statistics",
+            "log files"
+        ],
+        "semantic_templates": [
+            "Cookies may be used to track user activity.",
+            "Analytics tools collect usage data.",
+            "Tracking technologies monitor how users interact with the service."
+        ],
+        "explanation": "This clause allows tracking of user activity through cookies or analytics."
+    },
+
+    "monitoring_notifications": {
+        "weight": 2,
+        "keywords": [
+            "push notifications",
+            "send notifications",
+            "alerts",
+            "monitor activity"
+        ],
+        "semantic_templates": [
+            "The app may send push notifications.",
+            "Users may receive alerts regarding account activity.",
+            "The platform may monitor usage activity."
+        ],
+        "explanation": "This clause allows monitoring of user activity or sending system notifications."
+    },
+
+    "account_control": {
+        "weight": 3,
+        "keywords": [
+            "terminate your account",
+            "suspend your account",
+            "remove your content",
+            "account suspension",
+            "account termination"
+        ],
+        "semantic_templates": [
+            "We may suspend or terminate your account.",
+            "Content may be removed if it violates guidelines.",
+            "Accounts may be restricted by the platform."
+        ],
+        "explanation": "The platform can suspend accounts or remove user content."
+    },
+
+    "payment_access": {
+        "weight": 4,
+        "keywords": [
+            "payment information",
+            "credit card",
+            "billing details",
+            "financial information"
+        ],
+        "semantic_templates": [
+            "Your payment details may be stored.",
+            "Credit card information may be processed.",
+            "Billing information may be collected."
+        ],
+        "explanation": "The service may access or process financial information."
+    },
+
+    "device_permissions": {
+        "weight": 4,
+        "keywords": [
+            "camera access",
+            "microphone access",
+            "location data",
+            "gps location",
+            "access your contacts",
+            "read your contacts",
+            "device storage",
+            "access photos",
+            "access media files"
+        ],
+        "semantic_templates": [
+            "The application may access your device camera.",
+            "Location information may be collected from your device.",
+            "The app may access contacts or address book.",
+            "The service may access photos or files stored on your device."
+        ],
+        "explanation": "This clause allows access to device hardware or personal data such as camera, contacts, or location."
     }
+
 }
