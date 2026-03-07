@@ -34,24 +34,48 @@ SAFE_INDICATORS = [
     "no recurring charges", "not track", "not share",
     "not sell", "only required", "only necessary",
     "at any time through settings", "retain full ownership",
-    "delete your account", "remove content at any time"
+    "delete your account", "remove content at any time",
+    "do not collect", "do not store", "do not sell",
+    "do not share", "does not collect", "does not share"
 ]
 
+def normalize_text(text: str):
+    text = text.lower()
+    replacements = {
+        "don't": "do not",
+        "doesn't": "does not",
+        "won't": "will not",
+        "can't": "cannot",
+        "didn't": "did not"
+    }
+    for k, v in replacements.items():
+        text = text.replace(k, v)
+    return text
+
+
 def is_protective_sentence(sentence: str) -> bool:
-    s = sentence.lower()
+    s = normalize_text(sentence)
     return any(indicator in s for indicator in SAFE_INDICATORS)
 
 # -----------------------------
 # 4. Keyword Negation Check
 # -----------------------------
-NEGATION_WORDS = ["not", "never", "no", "without", "cannot", "won't", "don't"]
+NEGATION_WORDS = [
+    "not", "never", "no", "without",
+    "cannot", "can't", "won't",
+    "don't", "doesn't", "didn't",
+    "isn't", "aren't", "wasn't", "weren't"
+]
 
 def keyword_is_negated(sentence: str, keyword: str) -> bool:
     s = sentence.lower()
     index = s.find(keyword.lower())
+
     if index == -1:
         return False
-    context = s[max(0, index - 40): index + 40]
+
+    context = s[max(0, index - 50): index + 50]
+
     return any(neg in context for neg in NEGATION_WORDS)
 
 # -----------------------------
@@ -59,7 +83,7 @@ def keyword_is_negated(sentence: str, keyword: str) -> bool:
 # -----------------------------
 PERMISSION_KEYWORDS = {
     "camera": ["camera", "photo", "video", "take pictures", "record video"],
-    "microphone": ["microphone", "voice", "audio", "call", "record"],
+    "microphone": ["microphone", "voice", "audio", "record audio"],
     "contacts": ["contact", "friends list", "address book"],
     "location": ["location", "gps", "position", "map", "current location"],
     "storage": ["storage", "files", "offline data", "save data", "device storage"],
@@ -67,19 +91,24 @@ PERMISSION_KEYWORDS = {
 }
 
 def map_clause_to_permission(sentence: str):
+
     sentence_lower = sentence.lower()
-    # Special mapping for anonymized data sharing
+
     if "share anonymized data" in sentence_lower:
         return "data_sharing"
+
     for category, keywords in PERMISSION_KEYWORDS.items():
-        if any(keyword in sentence_lower for keyword in keywords):
-            return category
+        for keyword in keywords:
+            if keyword in sentence_lower:
+                return category
+
     return None
 
 # -----------------------------
 # 6. Main Clause Detection
 # -----------------------------
 def detect_clauses(sentences):
+
     detected_categories = set()
     risky_clauses = []
 
@@ -93,31 +122,48 @@ def detect_clauses(sentences):
     )
 
     for i, sentence in enumerate(sentences):
+
         sentence_lower = sentence.lower().strip()
         sentence_embedding = sentence_embeddings[i]
-        sentence_marked_risky = False
 
+        # 🚫 Skip protective sentences
         if is_protective_sentence(sentence_lower):
             continue
 
+        
+
         for category, data in RISK_CATEGORIES.items():
+
             category_detected = False
 
-            # Keyword check
+            # -----------------------------
+            # Keyword Detection
+            # -----------------------------
             for keyword in data.get("keywords", []):
-                if keyword.lower() in sentence_lower and not keyword_is_negated(sentence_lower, keyword):
-                    category_detected = True
-                    break
 
-            # Semantic similarity check
+                if keyword.lower() in sentence_lower:
+
+                    if not keyword_is_negated(sentence_lower, keyword):
+                        category_detected = True
+                        break
+
+            # -----------------------------
+            # Semantic Detection
+            # -----------------------------
             if not category_detected and category in TEMPLATE_EMBEDDINGS:
-                similarities = util.cos_sim(sentence_embedding, TEMPLATE_EMBEDDINGS[category])
+
+                similarities = util.cos_sim(
+                    sentence_embedding,
+                    TEMPLATE_EMBEDDINGS[category]
+                )
+
                 if torch.max(similarities).item() >= SIMILARITY_THRESHOLD:
                     category_detected = True
 
             if category_detected:
-                # Map to real permission or special case
+
                 permission_category = map_clause_to_permission(sentence) or category
+
                 detected_categories.add(permission_category)
 
                 risky_clauses.append(
@@ -125,18 +171,22 @@ def detect_clauses(sentences):
                         sentence=sentence,
                         category=permission_category,
                         explanation=data.get(
-                            "explanation", f"This clause allows access to {permission_category} data."
+                            "explanation",
+                            f"This clause allows access to {permission_category} related data."
                         )
                     )
                 )
-                sentence_marked_risky = True
+
+                break
 
     # -----------------------------
-    # Deduplicate clauses by sentence
+    # Deduplicate clauses
     # -----------------------------
     unique_clauses = []
     seen_sentences = set()
+
     for clause in risky_clauses:
+
         if clause.sentence not in seen_sentences:
             unique_clauses.append(clause)
             seen_sentences.add(clause.sentence)
