@@ -1,83 +1,119 @@
 # app/routes/analyze.py
 
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
+from pydantic import BaseModel
+
 from app.services.pdf_service import extract_text_from_pdf
 from app.services.nlp_service import extract_sentences
 from app.services.clause_detector import detect_clauses
 from app.services.risk_scorer import compute_risk
 from app.models.risk_level import classify_risk
-from app.services.mandatory_permissions import get_mandatory_permissions, PERMISSION_EXPLANATIONS
 
+# ---- Import mandatory permissions ----
+from app.services.mandatory_permissions import MANDATORY_PERMISSIONS, PERMISSION_EXPLANATIONS
 router = APIRouter()
 
-def adjust_clauses(risky_clauses, app_type: str):
-    """
-    Adjust clauses based on mandatory permissions:
-    - Mandatory permissions → informational + friendly explanation
-    - Others → risky + warning
-    """
-    mandatory = get_mandatory_permissions(app_type)
-    adjusted = []
+# -------- REQUEST MODEL --------
+class TextInput(BaseModel):
+    text: str
+    category: str | None = None  # app type
 
-    for clause in risky_clauses:
-        clause_dict = clause.__dict__.copy()
-        if clause.category in mandatory:
-            clause_dict["type"] = "informational"
-            explanation = PERMISSION_EXPLANATIONS.get(clause.category, "")
-            clause_dict["message"] = f"{explanation} (Expected for {app_type.replace('_',' ').title()} apps)"
-        else:
-            clause_dict["type"] = "risky"
-            clause_dict["message"] = f"Warning: {clause.explanation}"
 
-        adjusted.append(clause_dict)
+# -------- SUMMARY GENERATOR --------
+def generate_summary(detected_categories, risk_level, risky_clauses):
+    if not risky_clauses:
+        return "This document appears mostly safe. No major risky clauses were detected."
 
-    return adjusted
+    categories = ", ".join(detected_categories)
 
-# ---------------- Text Analysis ----------------
+    summary = f"This document has a {risk_level.lower()} level of legal risk. "
+    summary += f"It contains clauses related to {categories}. "
+    summary += "These clauses may affect your rights, limit liability, or allow data sharing. "
+    summary += "You should review these sections carefully before accepting the agreement."
+
+    return summary
+
+
+# -------- UTILITY: Get mandatory permissions --------
+def get_mandatory_permissions(app_type: str):
+    perms = MANDATORY_PERMISSIONS.get(app_type, [])
+    # Include friendly explanation for each permission
+    return {perm: PERMISSION_EXPLANATIONS.get(perm, "No description available") for perm in perms}
+
+
+# -------- TEXT ANALYSIS --------
 @router.post("/analyze-text/")
-async def analyze_text(text: str, app_type: str = "generic"):
+async def analyze_text(input_data: TextInput):
+    text = input_data.text
+    app_type = input_data.category or "other"
 
     sentences = extract_sentences(text)
     detected_categories, risky_clauses, risky_count = detect_clauses(sentences)
-    adjusted_clauses = adjust_clauses(risky_clauses, app_type)
 
-    risk_data = compute_risk(
-        detected_categories,
-        risky_count,
-        len(sentences)
-    )
+    # Compute overall document risk
+    risk_data = compute_risk(detected_categories, risky_count, len(sentences))
+    overall_risk_level = classify_risk(risk_data["risk_percentage"])
 
-    risk_level = classify_risk(risk_data["risk_percentage"])
+    # Compute risk per clause
+    per_clause_clauses = []
+    for c in risky_clauses:
+        clause_risk_score = compute_risk([c.category], 1, 1)["risk_percentage"]
+        clause_risk_level = classify_risk(clause_risk_score).lower()
+        per_clause_clauses.append({
+            "category": c.category,
+            "clause": c.sentence,
+            "note": c.explanation,
+            "risk_level": clause_risk_level
+        })
+
+    summary = generate_summary(detected_categories, overall_risk_level, risky_clauses)
+
+    # ---- Add mandatory permissions ----
+    mandatory_permissions = get_mandatory_permissions(app_type)
 
     return {
         **risk_data,
-        "risk_level": risk_level,
+        "risk_level": overall_risk_level,
+        "summary": summary,
         "detected_categories": list(detected_categories),
-        "risky_clauses": adjusted_clauses,
-        "app_type": app_type
+        "risky_clauses": per_clause_clauses,
+        "mandatory_permissions": mandatory_permissions
     }
 
-# ---------------- PDF Analysis ----------------
-@router.post("/analyze-pdf/")
-async def analyze_pdf(file: UploadFile = File(...), app_type: str = "generic"):
 
+# -------- PDF ANALYSIS --------
+@router.post("/analyze-pdf/")
+async def analyze_pdf(file: UploadFile = File(...), app_type: str = Form("other")):
     text = extract_text_from_pdf(file.file)
     sentences = extract_sentences(text)
     detected_categories, risky_clauses, risky_count = detect_clauses(sentences)
-    adjusted_clauses = adjust_clauses(risky_clauses, app_type)
 
-    risk_data = compute_risk(
-        detected_categories,
-        risky_count,
-        len(sentences)
-    )
+    # Compute overall document risk
+    risk_data = compute_risk(detected_categories, risky_count, len(sentences))
+    overall_risk_level = classify_risk(risk_data["risk_percentage"])
 
-    risk_level = classify_risk(risk_data["risk_percentage"])
+    # Compute risk per clause
+    per_clause_clauses = []
+    for c in risky_clauses:
+        clause_risk_score = compute_risk([c.category], 1, 1)["risk_percentage"]
+        clause_risk_level = classify_risk(clause_risk_score).lower()
+        per_clause_clauses.append({
+            "category": c.category,
+            "clause": c.sentence,
+            "note": c.explanation,
+            "risk_level": clause_risk_level
+        })
+
+    summary = generate_summary(detected_categories, overall_risk_level, risky_clauses)
+
+    # ---- Add mandatory permissions ----
+    mandatory_permissions = get_mandatory_permissions(app_type)
 
     return {
         **risk_data,
-        "risk_level": risk_level,
+        "risk_level": overall_risk_level,
+        "summary": summary,
         "detected_categories": list(detected_categories),
-        "risky_clauses": adjusted_clauses,
-        "app_type": app_type
+        "risky_clauses": per_clause_clauses,
+        "mandatory_permissions": mandatory_permissions
     }

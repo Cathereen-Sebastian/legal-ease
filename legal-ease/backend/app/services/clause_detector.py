@@ -15,8 +15,10 @@ embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 # 2. Precompute Risk Template Embeddings
 # -----------------------------
 TEMPLATE_EMBEDDINGS = {}
+
 for category, data in RISK_CATEGORIES.items():
     templates = data.get("semantic_templates", [])
+
     if templates:
         TEMPLATE_EMBEDDINGS[category] = embedding_model.encode(
             templates,
@@ -39,17 +41,28 @@ SAFE_INDICATORS = [
     "do not share", "does not collect", "does not share"
 ]
 
+# -----------------------------
+# 4. Text Normalization
+# -----------------------------
 def normalize_text(text: str):
+
     text = text.lower()
+
     replacements = {
         "don't": "do not",
         "doesn't": "does not",
         "won't": "will not",
         "can't": "cannot",
-        "didn't": "did not"
+        "didn't": "did not",
+        "isn't": "is not",
+        "aren't": "are not",
+        "wasn't": "was not",
+        "weren't": "were not"
     }
+
     for k, v in replacements.items():
         text = text.replace(k, v)
+
     return text
 
 
@@ -58,17 +71,18 @@ def is_protective_sentence(sentence: str) -> bool:
     return any(indicator in s for indicator in SAFE_INDICATORS)
 
 # -----------------------------
-# 4. Keyword Negation Check
+# 5. Keyword Negation Check
 # -----------------------------
 NEGATION_WORDS = [
     "not", "never", "no", "without",
-    "cannot", "can't", "won't",
-    "don't", "doesn't", "didn't",
-    "isn't", "aren't", "wasn't", "weren't"
+    "cannot", "do not", "does not",
+    "did not", "will not"
 ]
 
 def keyword_is_negated(sentence: str, keyword: str) -> bool:
-    s = sentence.lower()
+
+    s = normalize_text(sentence)
+
     index = s.find(keyword.lower())
 
     if index == -1:
@@ -79,7 +93,7 @@ def keyword_is_negated(sentence: str, keyword: str) -> bool:
     return any(neg in context for neg in NEGATION_WORDS)
 
 # -----------------------------
-# 5. Permission Category Mapping
+# 6. Permission Category Mapping
 # -----------------------------
 PERMISSION_KEYWORDS = {
     "camera": ["camera", "photo", "video", "take pictures", "record video"],
@@ -92,7 +106,7 @@ PERMISSION_KEYWORDS = {
 
 def map_clause_to_permission(sentence: str):
 
-    sentence_lower = sentence.lower()
+    sentence_lower = normalize_text(sentence)
 
     if "share anonymized data" in sentence_lower:
         return "data_sharing"
@@ -105,7 +119,7 @@ def map_clause_to_permission(sentence: str):
     return None
 
 # -----------------------------
-# 6. Main Clause Detection
+# 7. Main Clause Detection
 # -----------------------------
 def detect_clauses(sentences):
 
@@ -123,14 +137,16 @@ def detect_clauses(sentences):
 
     for i, sentence in enumerate(sentences):
 
-        sentence_lower = sentence.lower().strip()
+        sentence_lower = normalize_text(sentence).strip()
         sentence_embedding = sentence_embeddings[i]
 
-        # 🚫 Skip protective sentences
-        if is_protective_sentence(sentence_lower):
+        # Skip very short headings
+        if len(sentence_lower.split()) < 5:
             continue
 
-        
+        # Skip protective sentences
+        if is_protective_sentence(sentence_lower):
+            continue
 
         for category, data in RISK_CATEGORIES.items():
 
@@ -180,7 +196,7 @@ def detect_clauses(sentences):
                 break
 
     # -----------------------------
-    # Deduplicate clauses
+    # Deduplicate Clauses
     # -----------------------------
     unique_clauses = []
     seen_sentences = set()
