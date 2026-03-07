@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en" x-data="appState()">
+    <head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legal-Ease | Legal Risk Scanner</title>
+
+<script>
+let savedTheme = localStorage.getItem('dark');
+
+if (savedTheme === null) {
+  savedTheme = 'true'; // default theme = dark
+  localStorage.setItem('dark', 'true');
+}
+
+if (savedTheme === 'true') {
+  document.documentElement.classList.add('dark');
+}
+</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter", "sans-serif"] },
+          colors: {
+            bgDark: "#0b0f19",
+            panelDark: "#111827",
+            accent: "#3b82f6",
+            accentSoft: "#6366f1",
+            riskLow: "#22c55e",
+            riskMid: "#f59e0b",
+            riskHigh: "#ef4444"
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: "Inter", sans-serif; }
+    [x-cloak] { display:none !important; }
+    .glow { box-shadow: 0 0 40px rgba(59,130,246,0.15); }
+    .soft-border { border: 1px solid rgba(15,23,42,0.08); }
+    .dark .soft-border { border: 1px solid rgba(255,255,255,0.06); }
+  </style>
+</head>
+
+<body class="bg-white dark:bg-bgDark text-slate-900 dark:text-slate-200 transition-all duration-500 flex flex-col min-h-screen">
+
+<!-- NAVBAR -->
+<nav class="px-6 md:px-12 py-6 flex justify-between items-center">
+  <div @click="step = 1; window.scrollTo({ top: 0, behavior: 'smooth' })"
+       class="flex items-center gap-3 cursor-pointer">
+    <div class="w-10 h-10 bg-gradient-to-br from-accent to-accentSoft rounded-lg flex items-center justify-center text-white font-bold">
+      LE
+    </div>
+    <span class="font-semibold text-lg tracking-tight">Legal-Ease</span>
+  </div>
+
+  <button
+    @click="dark = !dark"
+    class="relative w-16 h-9 flex items-center rounded-full soft-border bg-slate-200 dark:bg-white/10 transition-all duration-300 px-1">
+    <div
+      class="w-7 h-7 bg-white dark:bg-bgDark rounded-full shadow-md flex items-center justify-center transform transition-all duration-300"
+      :class="dark ? 'translate-x-7' : 'translate-x-0'">
+      <svg x-show="!dark" x-cloak class="w-4 h-4 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+      </svg>
+      <svg x-show="dark" x-cloak class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="4" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42 M18.36 18.36l1.42 1.42 M2 12h2M20 12h2 M4.22 19.78l1.42-1.42 M18.36 5.64l1.42-1.42"/>
+      </svg>
+    </div>
+  </button>
+</nav>
+
+<main class="flex-1 flex flex-col">
+
+  <!-- STEP 1: LANDING / INTRO -->
+  <section x-show="step === 1" x-cloak x-transition class="flex-1 flex flex-col justify-center items-center px-6 md:px-12 text-center">
+    <div class="max-w-3xl space-y-10">
+      <div>
+        <h1 class="text-5xl md:text-6xl font-extrabold leading-tight">
+          Scan Legal Documents.<br>
+          <span class="bg-gradient-to-r from-accent to-accentSoft bg-clip-text text-transparent">Detect Hidden Risks.</span>
+        </h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-4 text-lg leading-relaxed">
+          Legal-Ease makes terms & conditions and privacy policies easy to understand. Highlight risky clauses and get a clear risk score before accepting.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-xl bg-slate-50 dark:bg-black/30 soft-border">
+          <h4 class="font-semibold mb-2">🔍 Risk Detection</h4>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Finds hidden clauses like auto-renewals, liability limits, and data misuse.</p>
+        </div>
+        <div class="p-6 rounded-xl bg-slate-50 dark:bg-black/30 soft-border">
+          <h4 class="font-semibold mb-2">📝 Plain English</h4>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Converts complex legal language into simple explanations anyone can understand.</p>
+        </div>
+        <div class="p-6 rounded-xl bg-slate-50 dark:bg-black/30 soft-border">
+          <h4 class="font-semibold mb-2">📊 Risk Score</h4>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Generates a clear 0–100 risk score so you know whether to proceed.</p>
+        </div>
+      </div>
+
+      <button @click="step = 2; window.scrollTo({ top: 0, behavior: 'smooth' })"
+              class="mt-8 px-8 py-4 rounded-xl font-semibold text-white bg-gradient-to-r from-accent to-accentSoft hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-lg shadow-accent/20">
+        Check Terms & Conditions / Privacy Policy
+      </button>
+    </div>
+  </section>
+
+  <!-- STEP 2: INPUT -->
+  <section x-show="step === 2" x-cloak x-transition class="flex-1 flex flex-col justify-start items-center px-6 md:px-12 h-[calc(100vh-5rem)] overflow-auto">
+    <div class="max-w-6xl w-full bg-slate-100 dark:bg-panelDark soft-border rounded-3xl p-8 md:p-12 glow md:flex md:gap-8 md:items-stretch">
+
+      <!-- TEXTAREA LEFT -->
+      <div class="flex-1 flex flex-col gap-4">
+        <textarea 
+          x-model="inputText" 
+          placeholder="Paste your legal document here..."
+          class="w-full p-4 md:p-6 rounded-2xl bg-slate-200 dark:bg-black/40 border border-slate-300 dark:border-white/10 focus:ring-2 focus:ring-accent focus:ring-opacity-50 outline-none transition text-base resize-y min-h-[12rem] max-h-[32rem]">
+        </textarea>
+        <p class="text-xs md:text-base text-slate-500 dark:text-slate-400 text-center mt-1 w-full">
+          Paste your Terms & Conditions or Privacy Policy here
+        </p>
+      </div>
+
+      <!-- OR SEPARATOR -->
+      <div class="flex flex-row md:flex-col items-center justify-center w-full md:w-auto mx-0 md:mx-6 my-2 md:my-0">
+        <div class="flex-1 h-px md:h-auto md:w-px bg-slate-300 dark:bg-slate-500"></div>
+        <span class="relative text-slate-400 dark:text-slate-500 font-medium text-lg mx-2 my-0 md:my-1">
+          <span class="absolute inset-0 flex items-center justify-center">
+            <span class="w-10 h-10 bg-slate-200 dark:bg-slate-700 rounded-full opacity-20"></span>
+          </span>
+          <span aria-hidden="true">OR</span>
+        </span>
+        <div class="flex-1 h-px md:h-auto md:w-px bg-slate-300 dark:bg-slate-500"></div>
+      </div>
+
+      <!-- PDF UPLOAD RIGHT -->
+      <div class="flex-1 flex flex-col justify-center gap-4 items-center md:items-start">
+        <label 
+          class="w-full py-2 md:py-3 bg-gradient-to-r from-slate-300 to-slate-400 dark:from-slate-700 dark:to-slate-800 text-slate-900 dark:text-white rounded-xl flex justify-center items-center gap-2 hover:from-slate-400 hover:to-slate-500 dark:hover:from-slate-800 dark:hover:to-slate-900 transition shadow-sm hover:shadow-md cursor-pointer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-8m0 0l-3 3m3-3l3 3M5 20h14"/>
+          </svg>
+          Upload PDF
+<input x-ref="fileInput" type="file" accept=".pdf" class="hidden"
+                 @change="
+                   file = $event.target.files[0]; 
+                   uploadedFileName = file ? file.name : '';
+                 ">
+        </label>
+        <p class="text-xs md:text-base text-slate-500 dark:text-slate-400 text-center mt-1 w-full">
+          <span x-text="uploadedFileName ? 'Selected file: ' + uploadedFileName : 'Upload your Terms & Conditions or Privacy Policy PDF'"></span>
+        </p>
+      </div>
+
+    </div>
+
+    <!-- APP TYPE SELECTOR + ANALYZE BUTTON -->
+    <div class="w-full max-w-6xl mt-4 md:mt-6 flex flex-col gap-4">
+
+      <!-- APP TYPE SELECTOR -->
+      <div class="flex flex-col gap-2">
+        <label class="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Select App Category *
+        </label>
+        <select x-model="appType"
+                class="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+          <option value="">Choose category</option>
+          <option value="social">📱 Social Media</option>
+          <option value="game">🎮 Game</option>
+          <option value="maps">🗺️ Maps</option>
+          <option value="shopping">🛒 Shopping</option>
+          <option value="other">📄 Other / General</option>
+        </select>
+      </div>
+
+      <!-- ANALYZE BUTTON -->
+      <button 
+        @click="
+          if (!appType) { 
+            error = 'Please select an app category first!'; 
+            return; 
+          }
+          error = '';
+          if (file) {
+            analyzePDF(file);
+          } else {
+            analyze();
+          }
+        "
+:disabled="loading || (!inputText && !file)"
+        :aria-disabled="loading"
+        class="w-full py-3 md:py-4 rounded-xl font-semibold text-white bg-gradient-to-r from-accent to-accentSoft hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3"
+      >
+        <span x-show="!loading">Analyze Document</span>
+        <span x-show="loading" class="flex items-center gap-2">
+          <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          Scanning...
+        </span>
+      </button>
+
+      <!-- BACK BUTTON -->
+      <button
+        @click="step = 1; resetAll();"
+        class="w-1/2 md:w-1/3 mx-auto py-2 rounded-full font-semibold bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 shadow-sm hover:shadow-md"
+      >
+        Back to Home
+      </button>
+
+      <!-- ERROR MESSAGE -->
+      <div x-show="error" class="text-red-500 text-center mt-2 font-medium" x-text="error"></div>
+
+    </div>
+  </section>
+
+  <!-- STEP 3: RESULT PAGE -->
+  <section x-show="step === 3" x-cloak x-transition class="px-6 md:px-12 pb-20 max-w-6xl mx-auto space-y-16 flex-1">
+
+    <!-- RISK METER -->
+    <div class="bg-white dark:bg-panelDark soft-border rounded-2xl p-6 md:p-12 glow">
+      <div class="flex flex-col md:flex-row justify-between items-center md:mb-6 mb-4 gap-4 md:gap-0">
+        <h2 class="text-2xl font-semibold text-center md:text-left">Overall Risk Score</h2>
+        <span class="text-3xl font-bold"
+              :class="{
+                'text-riskLow': risk < 40,
+                'text-riskMid': risk >= 40 && risk < 70,
+                'text-riskHigh': risk >= 70
+              }"
+              x-text="risk + ' / 100'"></span>
+      </div>
+<div class="h-5 rounded-full bg-slate-200 dark:bg-black/40 overflow-hidden">
+  <div 
+    class="h-full transition-all duration-700"
+    :class="{
+      'bg-riskLow': risk < 40,
+      'bg-riskMid': risk >= 40 && risk < 70,
+      'bg-riskHigh': risk >= 70
+    }"
+    :style="`width: ${step === 3 ? risk : 0}%`">
+  </div>
+</div>
+      <p class="mt-4 text-slate-500 dark:text-slate-400 text-sm text-center md:text-left"
+         x-text="result?.risk_level ? `${result.risk_level} – Review carefully.` : 'Analysis complete – review results.'"></p>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="bg-white dark:bg-panelDark soft-border rounded-2xl p-6 md:p-12">
+      <h2 class="text-2xl font-semibold mb-6 text-center md:text-left">Plain Language Summary</h2>
+      <p class="text-slate-600 dark:text-slate-300 leading-relaxed text-sm text-center md:text-left" x-text="summary || 'No summary available.'"></p>
+    </div>
+
+<!-- MANDATORY PERMISSIONS -->
+<div class="bg-white dark:bg-panelDark soft-border rounded-2xl p-6 md:p-12 space-y-4">
+  <h2 class="text-2xl font-semibold text-center md:text-left">Mandatory Permissions</h2>
+
+<template x-if="result && result.mandatory_permissions && Object.keys(result.mandatory_permissions).length > 0">
+      <ul class="list-disc list-inside text-slate-600 dark:text-slate-300 text-sm">
+      <template x-for="(note, permission) in result.mandatory_permissions" :key="permission">
+        <li>
+          <span class="font-semibold" x-text="permission.charAt(0).toUpperCase() + permission.slice(1)"></span>:
+          <span x-text="note"></span>
+        </li>
+      </template>
+    </ul>
+  </template>
+
+<p x-show="!result || !result.mandatory_permissions || Object.keys(result.mandatory_permissions).length === 0"
+   class="text-center text-slate-500">
+    No mandatory permissions required.
+  </p>
+</div>
+
+    <!-- HIGHLIGHTED RISK CLAUSES -->
+    <div class="bg-white dark:bg-panelDark soft-border rounded-2xl p-6 md:p-12 space-y-8">
+      <h2 class="text-2xl font-semibold text-center md:text-left">Highlighted Risk Clauses</h2>
+
+<!-- Show risky clauses if they exist -->
+<template x-if="clauses && clauses.length > 0">
+<div id="clausesBox" class="max-h-[60vh] overflow-auto space-y-6">
+      <template x-for="(clause, index) in clauses" :key="index">
+<div 
+  class="p-6 rounded-xl border-l-4 bg-slate-50 dark:bg-black/30 shadow-sm hover:shadow-md transition"
+  :class="{
+    'border-riskLow': clause.risk_level === 'low',
+    'border-riskMid': clause.risk_level === 'medium',
+    'border-riskHigh': clause.risk_level === 'high'
+  }">
+        <h4 class="font-semibold mb-2 text-center md:text-left"
+            x-text="clause.category.replaceAll('_',' ').replace(/\b\w/g, l => l.toUpperCase())"></h4>
+
+        <p class="text-sm text-slate-600 dark:text-slate-300 text-center md:text-left"
+           x-text="clause.clause"></p>
+
+        <p class="text-xs mt-2 text-slate-500 dark:text-slate-400 text-center md:text-left"
+           x-text="clause.note"></p>
+      </div>
+    </template>
+  </div>
+</template>
+
+      <!-- Show this if no risky clauses -->
+<p x-show="!clauses || clauses.length === 0"         class="text-center text-slate-500 mt-6">
+        No significant risky clauses detected.
+      </p>
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center pt-10 flex flex-col md:flex-row justify-center gap-4">
+      <button 
+        @click="step = 2; resetAll();"
+        class="px-8 py-4 rounded-xl font-semibold text-white bg-gradient-to-r from-accent to-accentSoft hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-lg shadow-accent/20">
+        Scan Another Document
+      </button>
+
+      <button 
+        @click="step = 1; resetAll();"
+        class="px-8 py-4 rounded-xl font-semibold text-white bg-gradient-to-r from-accent to-accentSoft hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-lg shadow-accent/20">
+        Back to Home
+      </button>
+    </div>
+
+  </section>
+
+  <footer class="mt-auto text-center py-6 text-xs text-slate-500 dark:text-slate-400">
+    © 2026 Legal-Ease.
+  </footer>
+</main>
+
+<script>
+function appState() {
+  return {
+dark: false,
+    step: 1,
+    loading: false,
+    risk: 0,
+    inputText: '',
+    appType: '',
+    file: null,
+    uploadedFileName: '',
+    result: null,
+    error: null,
+    summary: '',
+    clauses: [],
+
+    PERMISSION_EXPLANATIONS: {
+        "camera": "Allows you to take photos/videos within the app",
+        "microphone": "Allows you to record audio messages or calls",
+        "contacts": "Lets you connect with friends already using the app",
+        "location": "Tracks your location to provide accurate directions",
+        "storage": "Accesses your device storage to save files or offline data",
+        "usage_data": "Collects usage data to improve recommendations and features"
+    },
+
+init() {
+this.dark = localStorage.getItem('dark') === 'true';
+  this.$watch('dark', value => {
+    localStorage.setItem('dark', value);
+    document.documentElement.classList.toggle('dark', value);
+  });
+},
+
+
+resetAll() {
+  this.inputText = '';
+  this.result = null;
+  this.risk = 0;
+  this.error = null;
+  this.summary = '';
+  this.clauses = [];
+  this.appType = '';
+  this.file = null;
+  this.uploadedFileName = '';
+
+  if (this.$refs.fileInput) {
+    this.$refs.fileInput.value = '';
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+},
+analyze() {
+  if (!this.appType) { alert('Please select the app category!'); return; }
+  if (!this.inputText.trim()) { alert('Please paste some legal text first!'); return; }
+
+  this.loading = true; 
+  this.error = null; 
+  this.result = null; 
+  this.summary = '';
+
+  fetch('/analyze-text/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: this.inputText, category: this.appType })
+  })
+  .then(async res => { 
+    if (!res.ok) throw new Error(await res.text() || "Server error"); 
+    return res.json(); 
+  })
+  .then(data => {
+    this.result = data;
+
+    // Filter mandatory permissions to only show actually mentioned ones
+    if (this.result?.mandatory_permissions) {
+      const filtered = {};
+      const textContent = this.inputText.toLowerCase();
+      Object.keys(this.result.mandatory_permissions).forEach(key => {
+        if (textContent.includes(key.toLowerCase()) ||
+            (this.file && this.result.mandatory_permissions[key])) {
+          filtered[key] = this.PERMISSION_EXPLANATIONS[key.toLowerCase()] 
+                          || this.result.mandatory_permissions[key];
+        }
+      });
+      this.result.mandatory_permissions = filtered;
+    }
+
+// Use backend categories directly
+this.clauses = (data.risky_clauses ?? []).map(clause => ({
+  ...clause,
+  category: clause.category || "data_sharing"
+}));
+
+this.result.risky_clauses = this.clauses;
+
+    this.risk = data.risk_percentage ?? 0;
+    this.summary = data.summary ?? "No summary available.";
+    this.step = 3;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+this.$nextTick(() => {
+  const box = document.getElementById('clausesBox');
+  if (box) box.scrollTop = 0;
+});
+  })
+  .catch(err => { 
+    console.error(err); 
+    this.error = err.message || 'Failed to analyze document.'; 
+  })
+  .finally(() => { this.loading = false; });
+},
+
+analyzePDF(file) {
+  if (!this.appType) { this.error = "Please select the app category!"; return; }
+  if (!file) return;
+  if (!file.name.endsWith('.pdf')) { this.error = "Please select a PDF file!"; return; }
+
+  this.loading = true; 
+  this.error = null; 
+  this.result = null; 
+  this.summary = '';
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('app_type', this.appType);
+
+  fetch('/analyze-pdf/', { method: 'POST', body: formData })
+    .then(async res => { 
+      if (!res.ok) throw new Error(await res.text() || "Server error"); 
+      return res.json(); 
+    })
+    .then(data => {
+      this.result = data;
+
+      // Filter mandatory permissions to only show actually mentioned ones
+      if (this.result?.mandatory_permissions) {
+        const filtered = {};
+        const pdfText = this.result.text?.toLowerCase() || '';
+        Object.keys(this.result.mandatory_permissions).forEach(key => {
+          if (pdfText.includes(key.toLowerCase())) {
+            filtered[key] = this.PERMISSION_EXPLANATIONS[key.toLowerCase()] 
+                            || this.result.mandatory_permissions[key];
+          }
+        });
+        this.result.mandatory_permissions = filtered;
+      }
+
+// Use backend categories directly
+this.clauses = (data.risky_clauses ?? []).map(clause => ({
+  ...clause,
+  category: clause.category || "data_sharing"
+}));
+
+this.result.risky_clauses = this.clauses;
+
+      this.risk = data.risk_percentage ?? 0;
+      this.summary = data.summary ?? "No summary available.";
+      this.step = 3;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.$nextTick(() => {
+  const box = document.getElementById('clausesBox');
+  if (box) box.scrollTop = 0;
+});
+    })
+    .catch(err => { 
+      console.error(err); 
+      this.error = err.message || 'Failed to analyze PDF.'; 
+    })
+.finally(() => {
+  this.loading = false;
+
+  if (this.$refs.fileInput) {
+    this.$refs.fileInput.value = '';
+  }
+
+  this.file = null;
+});
+}
+  }
+}
+</script>
+
+</body>
+</html>

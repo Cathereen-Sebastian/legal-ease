@@ -1,9 +1,10 @@
 # Map app types to mandatory permissions
 MANDATORY_PERMISSIONS = {
-    "social_media": ["camera", "microphone", "contacts","location"],
+    "social": ["camera", "microphone", "contacts","location"],
     "game": ["microphone", "storage"],
-    "maps": ["location"],  # mandatory for navigation apps
+    "maps": ["location"],
     "shopping": ["location", "storage"],
+    "other": [],  # optional
 }
 
 # Friendly explanations for each permission type

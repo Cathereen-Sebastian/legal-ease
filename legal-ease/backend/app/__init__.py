@@ -1,15 +1,12 @@
-"""
-Initializes FastAPI application and registers routes.
-Includes CORS middleware for frontend communication.
-"""
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes.analyze import router as analyze_router
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from app.routes import analyze
 
-app = FastAPI(title="Legal-Ease Risk Analyzer")
+app = FastAPI(title="Legal Ease API")
 
-# Enable CORS (for HTML/JS frontend)
+# Allow frontend to talk to backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,4 +15,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(analyze_router)
+# Include API routes
+app.include_router(analyze.router)
+
+# Serve static frontend
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+
+@app.get("/")
+def read_index():
+    return FileResponse("app/static/index.html")
